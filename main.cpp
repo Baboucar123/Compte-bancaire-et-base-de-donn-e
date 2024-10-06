@@ -5,21 +5,22 @@
 
 using namespace std;
 
-// Connect to the database
+// connexion à la base de donnée 
+
 MYSQL* connectDB() {
     MYSQL *conn = mysql_init(NULL);
     if (conn == NULL) {
-        cerr << "mysql_init() a échoué." << endl;
+        cerr << "mysql_init() a echoue." << endl;
         exit(EXIT_FAILURE);
     }
 
     if (mysql_real_connect(conn, "192.168.137.68", "coly", "123456789", "banque", 0, NULL, 0) == NULL) {
-        cerr << "mysql_real_connect() a échoué." << endl;
+        cerr << "mysql_real_connect() a echoue." << endl;
         cerr << "Erreur : " << mysql_error(conn) << endl;
         mysql_close(conn);
         exit(EXIT_FAILURE);
     }
-    cout << "Connexion à la base de données réussie !" << endl;
+    cout << "Connexion a la base de donnees reussie !" << endl;
     return conn;
 }
 
@@ -42,7 +43,7 @@ void chargerComptesDepuisBDD(MYSQL* conn, Compte comptes[], int& nombreComptes) 
 
     nombreComptes = 0;
     while ((row = mysql_fetch_row(res)) != NULL) {
-        // Create a client and an account from the database data
+        //Créer un client et un compte dans la base de donnée 
         Client client(row[2], row[3], row[4], row[5], stoi(row[6]));
         Compte compte(stoi(row[0]), stod(row[1]), client, conn); // Ajout de 'conn'
         comptes[nombreComptes++] = compte;
@@ -51,33 +52,33 @@ void chargerComptesDepuisBDD(MYSQL* conn, Compte comptes[], int& nombreComptes) 
     mysql_free_result(res);
 }
 
-// Function to display operation menu
+// Fonctions pour presenter et permet de choisir dans le menu 
 void afficherMenu(Compte& compte, Compte comptes[], int nombreComptes) {
     int choix;
     double montant;
 
     do {
-        cout << "\nChoisissez une opération : " << endl;
-        cout << "1. Débiter" << endl;
-        cout << "2. Créditer" << endl;
+        cout << "\nChoisissez une operation : " << endl;
+        cout << "1. Debiter" << endl;
+        cout << "2. Crediter" << endl;
         cout << "3. Virement" << endl;
         cout << "4. Consulter le solde" << endl;
-        cout << "5. Se déconnecter" << endl;
+        cout << "5. Se deconnecter" << endl;
         cin >> choix;
 
         switch (choix) {
             case 1:
-                cout << "Montant à débiter : ";
+                cout << "Montant a debiter : ";
                 cin >> montant;
                 compte.debiter(montant);
                 break;
             case 2:
-                cout << "Montant à créditer : ";
+                cout << "Montant a crediter : ";
                 cin >> montant;
                 compte.crediter(montant);
                 break;
             case 3: {
-                cout << "RIB du bénéficiaire : ";
+                cout << "RIB du beneficiaire : ";
                 int ribDestinataire;
                 cin >> ribDestinataire;
 
@@ -90,11 +91,11 @@ void afficherMenu(Compte& compte, Compte comptes[], int nombreComptes) {
                 }
 
                 if (destinataire != nullptr) {
-                    cout << "Montant à transférer : ";
+                    cout << "Montant à transferer : ";
                     cin >> montant;
                     compte.virement(*destinataire, montant);
                 } else {
-                    cout << "Bénéficiaire introuvable." << endl;
+                    cout << "Beneficiaire introuvable." << endl;
                 }
                 break;
             }
@@ -102,7 +103,7 @@ void afficherMenu(Compte& compte, Compte comptes[], int nombreComptes) {
                 compte.consulterSolde();
                 break;
             case 5:
-                cout << "Déconnexion." << endl;
+                cout << "Deconnexion." << endl;
                 break;
             default:
                 cout << "Choix invalide." << endl;
@@ -111,11 +112,11 @@ void afficherMenu(Compte& compte, Compte comptes[], int nombreComptes) {
 }
 
 int main() {
-    // Connect to the database
+    // connexion à la base de donnée 
     MYSQL *conn = connectDB();
 
-    // Load accounts from the database
-    Compte comptes[10];  // Assume a maximum of 10 accounts
+    // chargement des comptes dans la base de donnée 
+    Compte comptes[10];  //le nombres max de comptes de 10 
     int nombreComptes;
     chargerComptesDepuisBDD(conn, comptes, nombreComptes);
 
@@ -126,13 +127,13 @@ int main() {
         int essaisRestants = 3;
         bool codeValide = false;
 
-        // Loop for entering code with 3 attempts
+        //boucles pour le nombre de tentative qi est de 3 
         while (essaisRestants > 0) {
             cout << "\nVeuillez insérer votre carte bancaire et entrer votre code secret (4 chiffres) : " << endl;
             int codeSecret;
             cin >> codeSecret;
 
-            // Verify the code for each account
+            //verification du code pour chacun des comptes 
             for (int i = 0; i < nombreComptes; ++i) {
                 if (comptes[i].getProprietaire().verifierCodeSecret(codeSecret)) {
                     cout << "Bienvenue " << comptes[i].getProprietaire().getNom() << " "
@@ -156,11 +157,11 @@ int main() {
         }
 
         if (!codeValide) {
-            cout << "Votre carte a été retenue pour des raisons de sécurité. Veuillez contacter votre banque." << endl;
+            cout << "Votre carte a ete retenue pour des raisons de securite. Veuillez contacter votre banque." << endl;
             break;
         }
 
-        // Ask if the client wants to quit
+        // demander le client s'il, veut quitter 
         cout << "\nSouhaitez-vous quitter ? (o/n) : ";
         char quitter;
         cin >> quitter;
@@ -170,9 +171,9 @@ int main() {
         }
     }
 
-    cout << "Merci de votre visite. À la prochaine !" << endl;
+    cout << "Merci de votre visite. A la prochaine !" << endl;
 
-    // Close the database connection
+    // déconnexion à la base de donnée 
     mysql_close(conn);
 
     return 0;
